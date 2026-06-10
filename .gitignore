@@ -1,0 +1,40 @@
+# Output de conversiones — no versionar
+docs/
+
+# Visual brainstorming sessions
+.superpowers/
+
+# Archivos internos del Universo-09 — no exponer en GitHub
+CLAUDE.md
+DocToMD.md
+skills-lock.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.env
+*.egg-info/
+dist/
+build/
+
+# Node / React
+node_modules/
+.next/
+out/
+dist/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
