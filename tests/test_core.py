@@ -58,7 +58,6 @@ class TestSetupWizard:
     def test_run_if_needed_skips_when_profile_exists(self, monkeypatch):
         fake_profile = {"gpu": "nvidia", "cuda_version": "12.4"}
         monkeypatch.setattr(wiz_mod, "hardware_profile_exists", lambda: True)
-        # patch get_hardware at the source module
         monkeypatch.setattr(hw_mod, "get_hardware", lambda: fake_profile)
         result = wiz_mod.run_if_needed()
         assert result == fake_profile
@@ -73,46 +72,77 @@ class TestSetupWizard:
         monkeypatch.setattr(wiz_mod, "_try_compile", lambda: False)
         monkeypatch.setattr(wiz_mod, "_py_detect", lambda: fake_profile)
         monkeypatch.setattr(wiz_mod, "save_hardware", lambda _: None)
-        monkeypatch.setattr(wiz_mod, "_install_requirements", lambda _: None)
+        monkeypatch.setattr(wiz_mod, "_install_all", lambda _: None)
+        monkeypatch.setattr(wiz_mod, "_cleanup", lambda: None)
 
         result = wiz_mod.run_if_needed()
         assert result["gpu"] == "none"
 
-    def test_install_requirements_cuda(self, monkeypatch, tmp_path):
-        req_file = tmp_path / "requirements-cuda.txt"
-        req_file.write_text("torch\n")
-        monkeypatch.setattr(wiz_mod, "_REPO_ROOT", tmp_path)
+    def test_install_all_calls_base_then_cuda(self, monkeypatch, tmp_path):
+        req_dir = tmp_path / "requirements"
+        req_dir.mkdir()
+        (req_dir / "base.txt").write_text("PyQt6\n")
+        (req_dir / "cuda.txt").write_text("torch\n")
+        monkeypatch.setattr(wiz_mod, "_REQUIREMENTS_DIR", req_dir)
 
-        called_args = []
+        installed = []
         monkeypatch.setattr(
             subprocess, "run",
-            lambda args, **kw: called_args.append(args) or MagicMock(returncode=0),
+            lambda args, **kw: installed.append(args) or MagicMock(returncode=0),
         )
-        wiz_mod._install_requirements("nvidia")
-        assert called_args, "subprocess.run was not called"
-        assert any("requirements-cuda.txt" in str(a) for a in called_args[0])
+        wiz_mod._install_all("nvidia")
 
-    def test_install_requirements_falls_back_to_cpu(self, monkeypatch, tmp_path):
-        req_cpu = tmp_path / "requirements-cpu.txt"
-        req_cpu.write_text("torch\n")
-        monkeypatch.setattr(wiz_mod, "_REPO_ROOT", tmp_path)
+        assert len(installed) == 2
+        assert any("base.txt" in str(a) for a in installed[0])
+        assert any("cuda.txt" in str(a) for a in installed[1])
 
-        called_args = []
+    def test_install_all_falls_back_to_cpu(self, monkeypatch, tmp_path):
+        req_dir = tmp_path / "requirements"
+        req_dir.mkdir()
+        (req_dir / "base.txt").write_text("PyQt6\n")
+        (req_dir / "cpu.txt").write_text("torch\n")
+        monkeypatch.setattr(wiz_mod, "_REQUIREMENTS_DIR", req_dir)
+
+        installed = []
         monkeypatch.setattr(
             subprocess, "run",
-            lambda args, **kw: called_args.append(args) or MagicMock(returncode=0),
+            lambda args, **kw: installed.append(args) or MagicMock(returncode=0),
         )
-        wiz_mod._install_requirements("none")
-        assert called_args
-        assert any("requirements-cpu.txt" in str(a) for a in called_args[0])
+        wiz_mod._install_all("none")
 
-    def test_install_requirements_skips_missing_file(self, monkeypatch, tmp_path):
-        # No requirements-rocm.txt → should not call pip
-        monkeypatch.setattr(wiz_mod, "_REPO_ROOT", tmp_path)
-        called = []
+        assert len(installed) == 2
+        assert any("cpu.txt" in str(a) for a in installed[1])
+
+    def test_install_all_skips_missing_gpu_file(self, monkeypatch, tmp_path):
+        req_dir = tmp_path / "requirements"
+        req_dir.mkdir()
+        (req_dir / "base.txt").write_text("PyQt6\n")
+        # No rocm.txt
+        monkeypatch.setattr(wiz_mod, "_REQUIREMENTS_DIR", req_dir)
+
+        installed = []
         monkeypatch.setattr(
             subprocess, "run",
-            lambda args, **kw: called.append(args),
+            lambda args, **kw: installed.append(args) or MagicMock(returncode=0),
         )
-        wiz_mod._install_requirements("amd")
-        assert called == []
+        wiz_mod._install_all("amd")
+        # Only base.txt is installed; rocm.txt missing → skipped
+        assert len(installed) == 1
+        assert any("base.txt" in str(a) for a in installed[0])
+
+    def test_cleanup_removes_requirements_and_build(self, tmp_path, monkeypatch):
+        req_dir = tmp_path / "requirements"
+        req_dir.mkdir()
+        (req_dir / "base.txt").write_text("x")
+
+        build_dir = tmp_path / "detector" / "build"
+        build_dir.mkdir(parents=True)
+        (build_dir / "detect.exe").write_text("binary")
+
+        monkeypatch.setattr(wiz_mod, "_REQUIREMENTS_DIR", req_dir)
+        monkeypatch.setattr(wiz_mod, "_DETECTOR_BUILD", build_dir)
+
+        wiz_mod._cleanup()
+
+        assert not req_dir.exists()
+        assert not build_dir.exists()
