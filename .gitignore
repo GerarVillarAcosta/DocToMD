@@ -21,15 +21,11 @@ env/
 dist/
 build/
 
-# Node / React
-node_modules/
-.next/
-out/
-dist/
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# C detector build output (keep source, ignore binaries)
+detector/build/
+
+# Hardware profile (user-specific, generated at first run)
+# ~/.config/doctomd/ is outside repo — nothing to ignore here
 
 # OS
 .DS_Store
@@ -38,3 +34,6 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# pytest
+.pytest_cache/

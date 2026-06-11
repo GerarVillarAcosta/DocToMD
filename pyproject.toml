@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "doctomd"
+version = "2.0.0"
+description = "Convert documents to Markdown — native desktop app"
+requires-python = ">=3.12"
+dependencies = [
+    "PyQt6>=6.7.0",
+    "PyQt6-WebEngine>=6.7.0",
+    "markitdown[all]>=0.1.0",
+    "markdown-it-py>=3.0.0",
+]
+
+[project.scripts]
+doctomd = "doctomd.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["doctomd*"]

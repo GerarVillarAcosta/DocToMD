@@ -1,0 +1,5 @@
+-r requirements-base.txt
+docling>=2.0.0
+torch>=2.3.0+rocm6.0
+torchvision>=0.18.0+rocm6.0
+--extra-index-url https://download.pytorch.org/whl/rocm6.0
