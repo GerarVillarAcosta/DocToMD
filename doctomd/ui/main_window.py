@@ -82,13 +82,8 @@ class MainWindow(QMainWindow):
 
         title = QLabel("DocToMD")
         title.setStyleSheet(_TITLE_STYLE)
-
-        self._engine_toggle = EngineToggle()
-        self._engine_toggle.engine_changed.connect(self._on_engine_changed)
-
         h_layout.addWidget(title)
         h_layout.addStretch()
-        h_layout.addWidget(self._engine_toggle)
 
         # ── left panel ────────────────────────────────────────────────────
         left_panel = QWidget()
@@ -105,6 +100,9 @@ class MainWindow(QMainWindow):
         self._file_info.setStyleSheet("color:#94a3b8; font-size:13px;")
         self._file_info.setVisible(False)
 
+        self._engine_toggle = EngineToggle()
+        self._engine_toggle.engine_changed.connect(self._on_engine_changed)
+
         self._btn_convert = QPushButton("Convertir")
         self._btn_convert.setStyleSheet(_BTN_CONVERT)
         self._btn_convert.setEnabled(False)
@@ -117,6 +115,7 @@ class MainWindow(QMainWindow):
 
         left_layout.addWidget(self._file_drop)
         left_layout.addWidget(self._file_info)
+        left_layout.addWidget(self._engine_toggle)
         left_layout.addWidget(self._btn_convert)
         left_layout.addWidget(self._error_label)
         left_layout.addStretch()

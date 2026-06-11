@@ -8,11 +8,11 @@ _ENGINES = {
 
 _BTN_ACTIVE = (
     "QPushButton { background:#1d3a60; color:#3b82f6; border:1px solid #3b82f6;"
-    " border-radius:4px; padding:4px 14px; font-size:12px; }"
+    " border-radius:4px; padding:7px 14px; font-size:13px; }"
 )
 _BTN_IDLE = (
     "QPushButton { background:#1e293b; color:#94a3b8; border:1px solid #334155;"
-    " border-radius:4px; padding:4px 14px; font-size:12px; }"
+    " border-radius:4px; padding:7px 14px; font-size:13px; }"
     "QPushButton:hover { border-color:#3b82f6; color:#cbd5e1; }"
 )
 
@@ -40,7 +40,7 @@ class EngineToggle(QWidget):
             btn.setStyleSheet(_BTN_ACTIVE if engine == self._current else _BTN_IDLE)
             btn.clicked.connect(lambda checked, e=engine: self._select(e))
             group.addButton(btn)
-            layout.addWidget(btn)
+            layout.addWidget(btn, stretch=1)
             self._buttons[engine] = btn
 
     def _select(self, engine: str):
