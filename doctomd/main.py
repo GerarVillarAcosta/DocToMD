@@ -6,28 +6,17 @@ Usage:
     # or via pyproject.toml script entry point: doctomd
 """
 
-import platform
 import sys
-from pathlib import Path
 
-from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QDialog, QLabel, QProgressBar, QVBoxLayout
-
-_ASSETS = Path(__file__).parent / "assets"
-
-
-def _app_icon() -> QIcon:
-    icon_file = _ASSETS / ("icon.ico" if platform.system() == "Windows" else "icon.png")
-    return QIcon(str(icon_file))
 
 
 # ── first-run setup dialog ────────────────────────────────────────────────
 
 class _SetupDialog(QDialog):
-    def __init__(self, icon: QIcon):
+    def __init__(self):
         super().__init__()
         self.setWindowTitle("DocToMD — Configuración inicial")
-        self.setWindowIcon(icon)
         self.setFixedSize(380, 140)
         self.setStyleSheet("background:#0f172a; color:#e2e8f0;")
 
@@ -60,13 +49,10 @@ def main():
     app.setApplicationName("DocToMD")
     app.setOrganizationName("GerarVillarAcosta")
 
-    icon = _app_icon()
-    app.setWindowIcon(icon)
-
     from doctomd.core.hardware import hardware_profile_exists
 
     if not hardware_profile_exists():
-        dialog = _SetupDialog(icon)
+        dialog = _SetupDialog()
         dialog.show()
         QApplication.processEvents()
 
@@ -77,7 +63,6 @@ def main():
 
     from doctomd.ui.main_window import MainWindow
     window = MainWindow()
-    window.setWindowIcon(icon)
     window.show()
 
     sys.exit(app.exec())
