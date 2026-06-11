@@ -6,19 +6,28 @@ Usage:
     # or via pyproject.toml script entry point: doctomd
 """
 
+import platform
 import sys
+from pathlib import Path
 
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QDialog, QLabel, QProgressBar, QVBoxLayout
+
+_ASSETS = Path(__file__).parent / "assets"
+
+
+def _app_icon() -> QIcon:
+    icon_file = _ASSETS / ("icon.ico" if platform.system() == "Windows" else "icon.png")
+    return QIcon(str(icon_file))
 
 
 # ── first-run setup dialog ────────────────────────────────────────────────
 
 class _SetupDialog(QDialog):
-    """Non-blocking setup splash shown while setup_wizard runs."""
-
-    def __init__(self):
+    def __init__(self, icon: QIcon):
         super().__init__()
         self.setWindowTitle("DocToMD — Configuración inicial")
+        self.setWindowIcon(icon)
         self.setFixedSize(380, 140)
         self.setStyleSheet("background:#0f172a; color:#e2e8f0;")
 
@@ -26,7 +35,7 @@ class _SetupDialog(QDialog):
         self._label.setStyleSheet("color:#94a3b8; font-size:13px;")
 
         bar = QProgressBar()
-        bar.setRange(0, 0)  # indeterminate
+        bar.setRange(0, 0)
         bar.setStyleSheet(
             "QProgressBar { border:none; background:#1e293b; border-radius:4px; height:6px; }"
             "QProgressBar::chunk { background:#3b82f6; border-radius:4px; }"
@@ -35,7 +44,7 @@ class _SetupDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(12)
-        layout.addWidget(QLabel("DocToMD").setObjectName if False else QLabel("DocToMD"))
+        layout.addWidget(QLabel("DocToMD"))
         layout.addWidget(self._label)
         layout.addWidget(bar)
 
@@ -51,10 +60,13 @@ def main():
     app.setApplicationName("DocToMD")
     app.setOrganizationName("GerarVillarAcosta")
 
+    icon = _app_icon()
+    app.setWindowIcon(icon)
+
     from doctomd.core.hardware import hardware_profile_exists
 
     if not hardware_profile_exists():
-        dialog = _SetupDialog()
+        dialog = _SetupDialog(icon)
         dialog.show()
         QApplication.processEvents()
 
@@ -65,6 +77,7 @@ def main():
 
     from doctomd.ui.main_window import MainWindow
     window = MainWindow()
+    window.setWindowIcon(icon)
     window.show()
 
     sys.exit(app.exec())
