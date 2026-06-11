@@ -1,17 +1,14 @@
 # DocToMD
 
-Convierte documentos a Markdown desde una interfaz web. Sube un PDF, imagen, Word, PowerPoint o Excel y obtén el contenido en Markdown limpio, listo para copiar o descargar.
+Convierte documentos a Markdown desde una aplicación de escritorio nativa. Abre un PDF, imagen, Word, PowerPoint o Excel y obtén el contenido en Markdown limpio, listo para copiar o descargar.
 
 ---
 
 ## ¿Cómo funciona?
 
-La app tiene dos partes:
-
-- **Backend (Python / FastAPI)** — recibe el archivo, lo procesa con el motor de conversión elegido y devuelve el Markdown resultante.
-- **Frontend (React)** — interfaz de dos paneles: sube el archivo a la izquierda, lee el resultado renderizado a la derecha.
-
-Todo corre en un único contenedor Docker. No requiere configuración adicional.
+- **UI nativa (PyQt6)** — dos paneles: sube el archivo a la izquierda, lee el resultado renderizado a la derecha.
+- **Detección de hardware** — al primer arranque detecta tu GPU automáticamente e instala solo las dependencias necesarias (CUDA, ROCm o CPU).
+- **Sin servidor, sin Docker** — todo corre localmente en tu máquina.
 
 ### Motores de conversión
 
@@ -24,31 +21,60 @@ Todo corre en un único contenedor Docker. No requiere configuración adicional.
 
 ## Requisitos
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo.
+- Python 3.11 o superior
+- Conexión a internet (solo en el primer arranque, para descargar dependencias)
 
 ---
 
-## Cómo ejecutarlo
+## Iniciar el programa
+
+### Windows
+
+Doble-clic en `DocToMD.pyw`.
+
+- **Primera vez:** se abre una ventana que instala las dependencias automáticamente, luego abre la app.
+- **Siguientes veces:** abre directo, sin ninguna ventana de consola.
+
+### Unix
 
 ```bash
-git clone https://github.com/GerarVillarAcosta/DocToMD.git
-cd DocToMD
-docker compose up --build
+python3 DocToMD.pyw
 ```
 
-Abre [http://localhost:8000](http://localhost:8000) en el navegador.
+- **Primera vez:** instala las dependencias automáticamente en la terminal, luego abre la app.
+- **Siguientes veces:** abre directo.
 
-> La primera build tarda entre 10 y 15 minutos porque Docling descarga sus modelos (~1–2 GB). Las siguientes builds son instantáneas si el código no cambia.
+> La primera ejecución puede tardar varios minutos — descarga Docling y PyTorch con soporte para tu GPU (~2–4 GB).
 
 ---
 
 ## Uso
 
 1. Arrastra o selecciona un archivo en el panel izquierdo.
-2. Elige el motor de conversión (pasa el cursor por encima para ver cuál usar).
+2. Elige el motor de conversión (pasa el cursor para ver cuál usar).
 3. Haz clic en **Convertir**.
 4. Lee el resultado renderizado en el panel derecho.
-5. Usa **Copiar MD** para copiar el Markdown al portapapeles, o **Descargar .md** para guardarlo.
+5. Usa **Copiar MD** para copiar al portapapeles, o **Descargar .md** para guardarlo.
+
+---
+
+## Desinstalar
+
+### Windows
+
+Doble-clic en `uninstall.pyw` y confirma en el diálogo que aparece.
+
+Elimina: PyQt6, markitdown, docling, torch y todas sus dependencias, además del perfil de hardware guardado en `%USERPROFILE%\.config\doctomd\`.
+
+### Unix
+
+```bash
+python3 uninstall.pyw
+```
+
+Elimina: PyQt6, markitdown, docling, torch y todas sus dependencias, además del perfil de hardware guardado en `~/.config/doctomd/`.
+
+Después puedes borrar la carpeta del proyecto manualmente.
 
 ---
 
@@ -60,7 +86,7 @@ Abre [http://localhost:8000](http://localhost:8000) en el navegador.
 
 ## Stack
 
-- **Backend:** Python 3.12 + FastAPI + Uvicorn
-- **Frontend:** React 18 + Vite + react-markdown
+- **UI:** Python 3.11+ + PyQt6
 - **Conversión:** markitdown (Microsoft) · Docling (IBM)
-- **Deploy:** Docker (imagen única, multi-stage build)
+- **Detector de hardware:** C (compilado en primer arranque)
+- **GPU:** NVIDIA CUDA · AMD ROCm · CPU (detectado automáticamente)
